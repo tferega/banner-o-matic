@@ -1,7 +1,6 @@
 resolvers := Seq(
-  "Element Nexus" at "http://repo.element.hr/nexus/content/groups/public/"
-, Resolver.url("Element Nexus (Ivy)",
-    new URL("http://repo.element.hr/nexus/content/groups/public/"))(Resolver.ivyStylePatterns)
+  "Element Nexus" at "http://repo.element.hr/nexus/content/groups/public/",
+  Resolver.url("Element Nexus (Ivy)", new URL("http://repo.element.hr/nexus/content/groups/public/"))(Resolver.ivyStylePatterns)
 )
 
 externalResolvers <<= resolvers map { rs =>

@@ -1,12 +1,12 @@
 import sbt._
 import Keys._
 
-
-
 // =============  PACKS THE REPOSITORIES INTO A SETTINGS VARIABLE  =============
 object Resolvers {
-  val settings = Seq(
-    resolvers := Options.Repositories,
+  import Repositories._
+
+  lazy val settings = Seq(
+    resolvers := Seq(ElementNexus, ElementReleases, ElementSnapshots),
     externalResolvers <<= resolvers map { rs =>
       Resolver.withDefaultResolvers(rs, mavenCentral = false)
     }
@@ -17,11 +17,13 @@ object Resolvers {
 
 // ==============  PUBLISHING SETTINGS  ==============
 object Publishing {
-  val settings = Seq(
+  import Repositories._
+
+  lazy val settings = Seq(
     publishTo <<= (version) { version => Some(
-      if (version.endsWith("SNAPSHOT")) ("Element Snapshots" at "http://repo.element.hr/nexus/content/repositories/snapshots/") else ("Element Releases"  at "http://repo.element.hr/nexus/content/repositories/releases/")
-    )},
-    credentials += Credentials(Path.userHome / ".publish" / "element.credentials"),
+      if (version.endsWith("SNAPSHOT")) ElementSnapshots else ElementReleases)
+    },
+    credentials += Credentials(Path.userHome / ".config" / "ascii-banner" / "nexus.config"),
     publishArtifact in (Compile, packageDoc) := false,
     crossScalaVersions := Seq("2.9.2", "2.9.1-1", "2.9.1")
   )
@@ -31,16 +33,23 @@ object Publishing {
 
 // ==============  DEFINES DEFAULT SETTINGS USED BY ALL PROJECTS  ==============
 object Default {
-  val settings =
+  import com.typesafe.sbteclipse.plugin.EclipsePlugin.{settings => eclipseSettings, _}
+  val Name = "ASCIIBanner"
+
+  lazy val settings =
     Defaults.defaultSettings ++
-    Resolvers.settings ++
-    Publishing.settings ++ Seq(
-      organization       :=  Options.Organisation,
-      crossScalaVersions :=  Options.ScalaVersions,
-      scalaVersion       <<= (crossScalaVersions) { versions => versions.head },
-      scalacOptions      :=  Seq("-unchecked", "-deprecation", "-encoding", "UTF-8", "-optimise"),
-      unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(_ :: Nil),
-      unmanagedSourceDirectories in Test    <<= (scalaSource in Test)(_ :: Nil)
+    eclipseSettings ++
+    Resolvers.settings ++ Seq(
+      name             := Name,
+      organization     := "hr.element",
+      version          := "0.0.0-SNAPSHOT",
+      scalaVersion     := "2.9.2",
+      EclipseKeys.projectFlavor :=  EclipseProjectFlavor.Java,
+      javacOptions     := Seq("-deprecation", "-Xlint:unchecked", "-encoding", "UTF-8", "-source", "1.6", "-target", "1.6"),
+      unmanagedSourceDirectories in Compile <<= (javaSource in Compile)(_ :: Nil),
+      unmanagedSourceDirectories in Test := Nil,
+      autoScalaLibrary := false,
+      crossPaths       := false
   )
 }
 
@@ -55,17 +64,13 @@ object Helpers {
   implicit def warName2SMA(name: String) = (_: String, _: ModuleID, _: Artifact) => name
 
 
-  // Creates a main container project (one that contains all other project, and
+  // Creates a main container project (one that contains all other projects, and
   // is otherwise empty).
-  def top(
-      projectAggs: Seq[sbt.ProjectReference] = Seq()) =
+  def top(projectAggs: Seq[sbt.ProjectReference] = Seq()) =
     Project(
-      Options.Name,
+      Default.Name,
       file("."),
-      settings = Default.settings ++ Seq(
-        name    := Options.Name,
-        version := Options.Version
-      )
+      settings = Default.settings
     ) aggregate(projectAggs: _*)
 
 
@@ -78,8 +83,7 @@ object Helpers {
       title,
       file(title.replace('-', '/')),
       settings = Default.settings ++ Seq(
-        name    := Options.Name +"-"+ title,
-        version := Options.Version
+        name := Default.Name +"-"+ title
       )
     ) aggregate(projectAggs: _*)
 
@@ -93,8 +97,7 @@ object Helpers {
       title,
       file(title.replace('-', '/')),
       settings = Default.settings ++ Seq(
-        name    := Options.Name +"-"+ title,
-        version := Options.Version
+        name := Default.Name +"-"+ title
       ) :+ (libraryDependencies <++= scalaVersion( sV =>
         for (depSeq <- deps; dep <- depSeq) yield dep(sV))
       )
