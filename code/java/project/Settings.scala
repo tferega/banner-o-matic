@@ -33,23 +33,33 @@ object Publishing {
 
 // ==============  DEFINES DEFAULT SETTINGS USED BY ALL PROJECTS  ==============
 object Default {
-  import com.typesafe.sbteclipse.plugin.EclipsePlugin.{settings => eclipseSettings, _}
+  import com.typesafe.sbteclipse.plugin.EclipsePlugin.{ settings => eclipseSettings, _ }
   val Name = "ASCIIBanner"
+
+  lazy val javaProject = 
+    eclipseSettings ++ Seq(
+      EclipseKeys.projectFlavor :=  EclipseProjectFlavor.Java,
+      javacOptions              := Seq("-deprecation", "-Xlint:unchecked", "-encoding", "UTF-8", "-source", "1.6", "-target", "1.6"),
+      autoScalaLibrary          := false,
+      crossPaths                := false,
+      unmanagedSourceDirectories in Compile <<= (javaSource in Compile)(_ :: Nil)
+  )
+
+  lazy val scalaProject = 
+    eclipseSettings ++ Seq(
+      EclipseKeys.projectFlavor :=  EclipseProjectFlavor.Scala,
+      scalacOptions             := Seq("-unchecked", "-deprecation", "-encoding", "UTF-8", "-optimise"),
+      unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(_ :: Nil)
+  )
 
   lazy val settings =
     Defaults.defaultSettings ++
-    eclipseSettings ++
     Resolvers.settings ++ Seq(
-      name             := Name,
-      organization     := "hr.element",
-      version          := "0.0.0-SNAPSHOT",
-      scalaVersion     := "2.9.2",
-      EclipseKeys.projectFlavor :=  EclipseProjectFlavor.Java,
-      javacOptions     := Seq("-deprecation", "-Xlint:unchecked", "-encoding", "UTF-8", "-source", "1.6", "-target", "1.6"),
-      unmanagedSourceDirectories in Compile <<= (javaSource in Compile)(_ :: Nil),
-      unmanagedSourceDirectories in Test := Nil,
-      autoScalaLibrary := false,
-      crossPaths       := false
+      name         := Name,
+      organization := "hr.element",
+      version      := "0.0.0-SNAPSHOT",
+      scalaVersion := "2.9.2",
+      unmanagedSourceDirectories in Test := Nil
   )
 }
 

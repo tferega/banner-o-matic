@@ -16,8 +16,15 @@ object ASCIIBannerBuild extends Build {
     Seq(),
     Seq()
   ) settings (
-    Publishing.settings: _*
+    Default.scalaProject: _*
   )
 
-  lazy val client = project("Client")
+  lazy val client = project(
+    "Client",
+    Seq(),
+    Seq()
+  ) settings ((
+    Publishing.settings ++
+    Default.javaProject): _*
+  )
 }
