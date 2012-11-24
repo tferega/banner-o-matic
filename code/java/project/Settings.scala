@@ -19,7 +19,7 @@ object Resolvers {
 object Publishing {
   val settings = Seq(
     publishTo <<= (version) { version => Some(
-      if (version.endsWith("SNAPSHOT")) ("Element Snapshots" at "http://maven.element.hr/nexus/content/repositories/snapshots/") else ("Element Releases"  at "http://maven.element.hr/nexus/content/repositories/releases/")
+      if (version.endsWith("SNAPSHOT")) ("Element Snapshots" at "http://repo.element.hr/nexus/content/repositories/snapshots/") else ("Element Releases"  at "http://repo.element.hr/nexus/content/repositories/releases/")
     )},
     credentials += Credentials(Path.userHome / ".publish" / "element.credentials"),
     publishArtifact in (Compile, packageDoc) := false,

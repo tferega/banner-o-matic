@@ -8,7 +8,7 @@ object Build extends Build {
     Defaults.defaultSettings ++
     eclipseSettings ++ Seq(
       organization     := "hr.element"
-    , version          := "0.1.0-SNAPSHOT"
+    , version          := "0.0.0-SNAPSHOT"
     , scalaVersion     := "2.9.2"
 
     , javacOptions     := Seq("-deprecation", "-Xlint:unchecked", "-encoding", "UTF-8", "-source", "1.6", "-target", "1.6")
@@ -18,9 +18,9 @@ object Build extends Build {
     , crossPaths       := false
 
     , resolvers := Seq(
-        "Element Nexus"     at "http://maven.element.hr/nexus/content/groups/public/"
-      , "Element Releases"  at "http://maven.element.hr/nexus/content/repositories/releases/"
-      , "Element Snapshots" at "http://maven.element.hr/nexus/content/repositories/snapshots/"
+        "Element Nexus"     at "http://repo.element.hr/nexus/content/groups/public/"
+      , "Element Releases"  at "http://repo.element.hr/nexus/content/repositories/releases/"
+      , "Element Snapshots" at "http://repo.element.hr/nexus/content/repositories/snapshots/"
       )
     , externalResolvers <<= resolvers map { rS =>
         Resolver.withDefaultResolvers(rS, mavenCentral = false)
