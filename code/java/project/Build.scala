@@ -18,6 +18,9 @@ object Build extends Build {
     , crossPaths       := false
 
     , resolvers := Seq(
+        "Element Nexus"     at "http://maven.element.hr/nexus/content/groups/public/"
+      , "Element Releases"  at "http://maven.element.hr/nexus/content/repositories/releases/"
+      , "Element Snapshots" at "http://maven.element.hr/nexus/content/repositories/snapshots/"
       )
     , externalResolvers <<= resolvers map { rS =>
         Resolver.withDefaultResolvers(rS, mavenCentral = false)
@@ -41,6 +44,11 @@ object Build extends Build {
     settings = defaults ++ Seq(
       libraryDependencies ++= Seq(
       )
+    , publishTo <<= (version, resolvers) { (version, rS) => Some(
+        if (version endsWith "SNAPSHOT") rS(2) else rS(1)
+      )}
+    , publishArtifact in (Compile, packageDoc) := false
+
     )
   )
 }
