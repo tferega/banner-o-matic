@@ -33,22 +33,25 @@ object Publishing {
 
 // ==============  DEFINES DEFAULT SETTINGS USED BY ALL PROJECTS  ==============
 object Default {
-  import com.typesafe.sbteclipse.plugin.EclipsePlugin.{ settings => eclipseSettings, _ }
+  import com.typesafe.sbteclipse.plugin.EclipsePlugin
+  import EclipsePlugin.{ settings => eclipseSettings, EclipseProjectFlavor }
+  import EclipsePlugin.EclipseKeys.projectFlavor
+
   val Name = "ASCIIBanner"
 
-  lazy val javaProject = 
+  lazy val javaProject =
     eclipseSettings ++ Seq(
-      EclipseKeys.projectFlavor :=  EclipseProjectFlavor.Java,
-      javacOptions              := Seq("-deprecation", "-Xlint:unchecked", "-encoding", "UTF-8", "-source", "1.6", "-target", "1.6"),
-      autoScalaLibrary          := false,
-      crossPaths                := false,
+      projectFlavor    := EclipseProjectFlavor.Java,
+      javacOptions     := Seq("-deprecation", "-Xlint:unchecked", "-encoding", "UTF-8", "-source", "1.6", "-target", "1.6"),
+      autoScalaLibrary := false,
+      crossPaths       := false,
       unmanagedSourceDirectories in Compile <<= (javaSource in Compile)(_ :: Nil)
   )
 
-  lazy val scalaProject = 
+  lazy val scalaProject =
     eclipseSettings ++ Seq(
-      EclipseKeys.projectFlavor :=  EclipseProjectFlavor.Scala,
-      scalacOptions             := Seq("-unchecked", "-deprecation", "-encoding", "UTF-8", "-optimise"),
+      //projectFlavor := EclipseProjectFlavor.Scala,
+      scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "UTF-8", "-optimise"),
       unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(_ :: Nil)
   )
 
@@ -73,6 +76,18 @@ object Helpers {
   implicit def depSeqToFun(mA: Seq[ModuleID]) = mA.map(m => ((_: String) => m))
   implicit def warName2SMA(name: String) = (_: String, _: ModuleID, _: Artifact) => name
 
+  sealed trait ProjectFlavor
+  object ProjectFlavor {
+    case object Java  extends ProjectFlavor
+    case object Scala extends ProjectFlavor
+  }
+
+  private def flavorSettings(flavor: ProjectFlavor) =
+    flavor match {
+      case ProjectFlavor.Java  => Default.javaProject
+      case ProjectFlavor.Scala => Default.scalaProject
+    }
+
 
   // Creates a main container project (one that contains all other projects, and
   // is otherwise empty).
@@ -87,7 +102,7 @@ object Helpers {
   // Creates a container project (one that contains sub-projects, and is
   // otherwise empty).
   def parent(
-      title: String,
+      title:       String,
       projectAggs: Seq[sbt.ProjectReference] = Seq()) =
     Project(
       title,
@@ -100,13 +115,14 @@ object Helpers {
 
   // Creates a proper project.
   def project(
-      title: String,
-      deps: Seq[Seq[String => ModuleID]] = Seq(),
+      title:       String,
+      flavor:      ProjectFlavor,
+      deps:        Seq[Seq[String => ModuleID]] = Seq(),
       projectDeps: Seq[ClasspathDep[ProjectReference]] = Seq()) =
     Project(
       title,
       file(title.replace('-', '/')),
-      settings = Default.settings ++ Seq(
+      settings = Default.settings ++ flavorSettings(flavor) ++ Seq(
         name := Default.Name +"-"+ title
       ) :+ (libraryDependencies <++= scalaVersion( sV =>
         for (depSeq <- deps; dep <- depSeq) yield dep(sV))

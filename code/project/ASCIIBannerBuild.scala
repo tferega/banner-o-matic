@@ -12,23 +12,19 @@ object ASCIIBannerBuild extends Build {
 
   lazy val client = project(
     "Client",
-    Seq(),
-    Seq(common)
-  ) settings ((
-    Publishing.settings ++
-    Default.javaProject): _*
-  )
-
-  lazy val common = project("Common").
-  settings (
-    Default.javaProject: _*
-  )
-
-  lazy val service = project(
-    "Service",
+    ProjectFlavor.Java,
     Seq(),
     Seq(common)
   ) settings (
-    Default.scalaProject: _*
+    Publishing.settings: _*
+  )
+
+  lazy val common = project("Common", ProjectFlavor.Java)
+
+  lazy val service = project(
+    "Service",
+    ProjectFlavor.Scala,
+    Seq(),
+    Seq(common)
   )
 }
