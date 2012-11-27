@@ -31,6 +31,20 @@ object Publishing {
 
 
 
+// ==============  LIFT SETTINGS  ==============
+object Lift {
+  import com.github.siasia.PluginKeys._
+  import com.github.siasia.WebPlugin._
+
+  def settings(portNumber: Int) = 
+    webSettings ++ Seq(
+      port in container.Configuration := portNumber,
+      scanDirectories in Compile      := Nil
+    )
+}
+
+
+
 // ==============  DEFINES DEFAULT SETTINGS USED BY ALL PROJECTS  ==============
 object Default {
   import com.typesafe.sbteclipse.plugin.EclipsePlugin

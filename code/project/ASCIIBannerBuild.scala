@@ -1,6 +1,7 @@
 import sbt._
 import Keys._
 
+import Dependencies._
 import Helpers._
 
 object ASCIIBannerBuild extends Build {
@@ -24,7 +25,11 @@ object ASCIIBannerBuild extends Build {
   lazy val service = project(
     "Service",
     ProjectFlavor.Scala,
-    Seq(),
+    Seq(
+      jetty,
+      lift),
     Seq(common)
+  ) settings (
+    Lift.settings(9973): _*
   )
 }
